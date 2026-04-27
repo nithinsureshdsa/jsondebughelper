@@ -1,33 +1,26 @@
 # ── Stage 1: Build ────────────────────────────────────────
-FROM eclipse-temurin:17-jdk-alpine AS builder
+FROM eclipse-temurin:21-jdk-alpine AS builder
 
 WORKDIR /app
 
-# Copy Gradle wrapper and build files first (layer cache)
 COPY gradlew .
 COPY gradle gradle
 COPY build.gradle .
 COPY settings.gradle .
 
-# Make gradlew executable
 RUN chmod +x gradlew
-
-# Download dependencies (cached unless build files change)
 RUN ./gradlew dependencies --no-daemon
 
-# Copy source and build the fat jar
 COPY src src
 RUN ./gradlew bootJar --no-daemon -x test
 
 # ── Stage 2: Run ──────────────────────────────────────────
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
 
-# Copy only the built jar from the builder stage
 COPY --from=builder /app/build/libs/*.jar app.jar
 
-# Render sets PORT env var — Spring Boot reads it automatically
 EXPOSE 8080
 
 ENTRYPOINT ["java", "-jar", "app.jar"]

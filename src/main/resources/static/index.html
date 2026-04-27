@@ -532,8 +532,6 @@
     }
 
     // ── API call wrapper ────────────────────────────────────
-    // body values that are plain JS strings are sent as JSON strings on the wire.
-    // body values that are objects are serialized as JSON objects.
     async function callApi(endpoint, body) {
       const res = await fetch(API + endpoint, {
         method: 'POST',
@@ -543,19 +541,6 @@
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || data.error || 'Request failed');
       return data;
-    }
-
-    // Safely build a request body where JSON textarea values are sent as strings.
-    // Spring @RequestBody with String fields expects a JSON string value, e.g. "json1": "{...}"
-    // JSON.stringify handles this correctly as long as we pass JS strings, not parsed objects.
-    function jsonBody(fields) {
-      // Build the JSON manually so we control each value's type precisely
-      const parts = Object.entries(fields).map(([k, v]) => {
-        // If the value is already a JS string, stringify it as a JSON string
-        // If it's a boolean, number, etc., keep as-is
-        return `${JSON.stringify(k)}:${JSON.stringify(v)}`;
-      });
-      return '{' + parts.join(',') + '}';
     }
 
     // ── Clear panel ──────────────────────────────────────────
@@ -616,7 +601,7 @@
       hideStatus('cmp-status');
       spin('cmp-spin', true);
       try {
-        const data = await callApi('/compare', { json1: JSON.parse(left), json2: JSON.parse(right) });
+        const data = await callApi('/compare', { json1: left, json2: right });
         renderDiff(data.differences);
         if (data.differences.length === 0)
           showStatus('cmp-status', '✓ JSONs are identical!', 'success');
@@ -660,7 +645,8 @@
       hideStatus('srch-status');
       spin('srch-spin', true);
       try {
-        const data = await callApi('/search', { json: JSON.parse(raw), query });
+        // Send json as a string — backend parses it
+        const data = await callApi('/search', { json: raw, query });
         renderMatches(data.matches);
         showStatus('srch-status', `Found ${data.matches.length} match(es)`, data.matches.length ? 'success' : 'info');
       } catch(e) {
@@ -695,7 +681,8 @@
       hideStatus('ext-status');
       spin('ext-spin', true);
       try {
-        const data = await callApi('/extract', { json: JSON.parse(raw), path });
+        // Send json as a string — backend parses it
+        const data = await callApi('/extract', { json: raw, path });
         document.getElementById('ext-output').value = JSON.stringify(data.result, null, 2);
         showStatus('ext-status', `✓ Extracted ${data.result.length} item(s)`, 'success');
       } catch(e) {
