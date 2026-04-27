@@ -338,6 +338,9 @@
                 <span>Format</span>
                 <div class="spinner" id="fmt-spin"></div>
             </button>
+            <button class="btn btn-ghost" onclick="loadSample('format')">
+                Try Sample JSON
+            </button>
             <button class="btn btn-ghost" onclick="clearPanel('format')">Clear</button>
             <div class="status" id="fmt-status"></div>
         </div>
@@ -365,6 +368,9 @@
             <button class="btn btn-primary" onclick="doCompare()">
                 <span>Compare</span>
                 <div class="spinner" id="cmp-spin"></div>
+            </button>
+            <button class="btn btn-ghost" onclick="loadSample('compare')">
+                Try Sample
             </button>
             <button class="btn btn-ghost" onclick="clearPanel('compare')">Clear</button>
             <div class="status" id="cmp-status"></div>
@@ -404,6 +410,9 @@
                 <span>Search</span>
                 <div class="spinner" id="srch-spin"></div>
             </button>
+            <button class="btn btn-ghost" onclick="loadSample('search')">
+                Try Sample
+            </button>
             <button class="btn btn-ghost" onclick="clearPanel('search')">Clear</button>
             <div class="status" id="srch-status"></div>
         </div>
@@ -435,6 +444,9 @@
                 <span>Extract</span>
                 <div class="spinner" id="ext-spin"></div>
             </button>
+            <button class="btn btn-ghost" onclick="loadSample('extract')">
+                Try Sample
+            </button>
             <button class="btn btn-ghost" onclick="clearPanel('extract')">Clear</button>
             <div class="status" id="ext-status"></div>
         </div>
@@ -461,6 +473,9 @@
         <div class="toolbar">
             <button class="btn btn-success" onclick="doTable()">
                 <span>Convert to Table</span>
+            </button>
+            <button class="btn btn-ghost" onclick="loadSample('table')">
+                Try Sample
             </button>
             <button class="btn btn-ghost" onclick="clearPanel('table')">Clear</button>
             <button class="btn btn-ghost" onclick="exportTableCSV()">⬇ Export CSV</button>
@@ -791,6 +806,71 @@
         if (actions[active.id]) actions[active.id]();
       }
     });
+
+    function loadSample(type) {
+
+  const samples = {
+
+    format: `{"user":{"id":1,"name":"Alice","roles":["admin","user"],"active":true},"meta":{"createdAt":"2024-01-01","tags":["test","sample"]}}`,
+
+    compare: {
+      left: `{"name":"Alice","role":"admin","active":true}`,
+      right:`{"name":"Alice","role":"user","active":false}`
+    },
+
+    search: {
+      json: `{
+  "users": [
+    {"id":1,"name":"Alice","email":"alice@test.com"},
+    {"id":2,"name":"Bob","email":"bob@test.com"}
+  ]
+}`,
+      query: "alice"
+    },
+
+    extract: {
+      json: `{
+  "users": [
+    {"id":1,"name":"Alice","email":"alice@test.com"},
+    {"id":2,"name":"Bob","email":"bob@test.com"}
+  ]
+}`,
+      path: "$.users[*].email"
+    },
+
+    table: `[
+  {"id":1,"name":"Alice","role":"admin"},
+  {"id":2,"name":"Bob","role":"user"},
+  {"id":3,"name":"Charlie","role":"guest"}
+]`
+  };
+
+  switch(type) {
+
+    case 'format':
+      document.getElementById('fmt-input').value = samples.format;
+      break;
+
+    case 'compare':
+      document.getElementById('cmp-left').value = samples.compare.left;
+      document.getElementById('cmp-right').value = samples.compare.right;
+      break;
+
+    case 'search':
+      document.getElementById('srch-input').value = samples.search.json;
+      document.getElementById('search-query').value = samples.search.query;
+      break;
+
+    case 'extract':
+      document.getElementById('ext-input').value = samples.extract.json;
+      document.getElementById('extract-path').value = samples.extract.path;
+      break;
+
+    case 'table':
+      document.getElementById('tbl-input').value = samples.table;
+      break;
+  }
+}
 </script>
 </body>
 </html>
